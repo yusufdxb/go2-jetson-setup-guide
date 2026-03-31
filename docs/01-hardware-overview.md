@@ -23,7 +23,7 @@ This guide walks you through adding an NVIDIA Jetson to a Unitree GO2 quadruped 
 
 The GO2 already has onboard compute. Depending on the model:
 
-- **GO2 EDU**: ships with a Jetson Orin NX or Orin Nano inside. Yes, there is already a Jetson in the dog. The one you are adding is a *second* compute unit -- typically used for custom perception or autonomy workloads.
+- **GO2 EDU**: ships with a built-in compute board (typically a Jetson Orin NX or Orin Nano, though this may vary by hardware revision). The one you are adding is a *second* compute unit -- typically used for custom perception or autonomy workloads.
 - **GO2 PRO**: ships with a different internal board. The exact board varies by firmware version; check Unitree's documentation for your specific unit.
 
 The GO2's main control board (the MCU that handles motor control, IMU, and the stock locomotion controller) sits on the internal Ethernet network regardless of model. Your Jetson will join that same network.
@@ -37,11 +37,11 @@ The GO2 uses a wired Ethernet network inside the body with the subnet **192.168.
 | Device | Typical IP | Notes |
 |--------|-----------|-------|
 | Main control board (MCU) | `192.168.123.161` | Fixed in firmware — do not change |
-| GO2 EDU built-in compute board | `192.168.123.13` | Fixed in firmware — EDU model only |
+| GO2 EDU built-in compute board | `192.168.123.13` | Documented default — EDU model only. Verify with `nmap` (see below). |
 | Your new Jetson (what we will set up) | `192.168.123.15` | We assign this; use `.18` if `.15` is taken |
 | GO2's Wi-Fi AP gateway | `192.168.12.1` | **Different subnet (12.x)** — this is the Wi-Fi hotspot |
 
-> **Important**: Before assigning `192.168.123.15` to your new Jetson, scan the network to check what is already in use: `nmap -sn 192.168.123.0/24`. If a device already uses `.15`, pick a different unused address (e.g., `192.168.123.18`). The MCU at `.161` and the EDU built-in board at `.13` are both fixed in firmware and must not be changed.
+> **Important**: Before assigning `192.168.123.15` to your new Jetson, scan the network to check what is already in use: `nmap -sn 192.168.123.0/24`. If a device already uses `.15`, pick a different unused address (e.g., `192.168.123.18`). The MCU at `.161` is standard across all GO2 units. The EDU built-in compute board is documented at `.13`, but exact addresses may vary by firmware version — always scan first and do not change any factory-assigned addresses.
 
 ---
 

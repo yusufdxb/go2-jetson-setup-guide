@@ -400,7 +400,7 @@ Network behavior is unpredictable. Sometimes pings work, sometimes they do not. 
 
 **Check for duplicate IPs:**
 
-If two devices share the same IP address, packets will randomly go to one or the other. This is a common mistake when the GO2 EDU already has an internal Jetson at `192.168.123.15` and you assign the same IP to your new Jetson.
+If two devices share the same IP address, packets will randomly go to one or the other. This commonly happens when a device on the GO2's internal network already uses the address you assigned to your new Jetson (e.g., the EDU built-in compute board at `.13`, or another device you did not expect).
 
 Scan the network to see what is already there:
 
@@ -451,7 +451,7 @@ sudo nmcli con modify go2-network ipv4.addresses 192.168.123.18/24
 sudo nmcli con up go2-network
 ```
 
-> Pick any unused address on `192.168.123.x` that is not already taken by the GO2 main board (`.161`), the EDU built-in compute board (`.13`), or your laptop (`.100`). Scan the network first with `nmap -sn 192.168.123.0/24` to see what is in use.
+> Pick any unused address on `192.168.123.x` that is not already taken by the GO2 main board (`.161`), the EDU built-in compute board (typically `.13`), or your laptop (`.100`). Always scan the network first with `nmap -sn 192.168.123.0/24` to see what is in use — do not assume addresses are free.
 
 **If the subnet mask is wrong** (e.g., `/32` instead of `/24`):
 

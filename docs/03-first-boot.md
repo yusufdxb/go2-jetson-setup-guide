@@ -127,7 +127,7 @@ sudo nmcli con add type ethernet ifname eth0 con-name go2-network \
 
 > Replace `eth0` with your actual interface name if different.
 
-> **Important**: The GO2 EDU has a built-in compute board at `192.168.123.13`. Before assigning `.15` to your new Jetson, scan the network to confirm it is not already in use: `nmap -sn 192.168.123.0/24`. If `.15` is taken, choose a different unused address like `192.168.123.18`. See [01 -- Hardware Overview](01-hardware-overview.md) for the full IP table.
+> **Important**: The GO2 EDU has a built-in compute board (documented at `192.168.123.13`, though this may vary by firmware version). Before assigning `.15` to your new Jetson, scan the network to confirm the address is not already in use: `nmap -sn 192.168.123.0/24`. If `.15` is taken, choose a different unused address like `192.168.123.18`. See [01 -- Hardware Overview](01-hardware-overview.md) for the full IP table.
 
 Bring the connection up:
 

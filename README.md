@@ -198,13 +198,13 @@ Below is the typical network topology when the Jetson is installed on the GO2 an
 | Laptop (your dev machine) | 192.168.123.100 | Static, set manually |
 | Your Jetson Orin | 192.168.123.15 | Static, set manually (use .18 if .15 is taken) |
 | GO2 main control board (MCU) | 192.168.123.161 | Fixed in firmware — do not change |
-| GO2 EDU built-in compute board | 192.168.123.13 | Fixed in firmware — only present on EDU model |
+| GO2 EDU built-in compute board | 192.168.123.13 | Documented default (EDU only) — verify with `nmap` scan |
 | GO2 LiDAR (if equipped) | varies | Scan with `nmap -sn 192.168.123.0/24` to discover |
 | GO2 Wi-Fi AP (robot's own hotspot) | 192.168.12.1 | **Different subnet (12.x, not 123.x)** |
 
 > The GO2's own Wi-Fi hotspot uses **192.168.12.x**, not **192.168.123.x**. These are completely separate networks. The wired internal network (192.168.123.x) is what this guide uses for all communication.
 
-> If you have a GO2 EDU, the built-in compute board at `.13` is already a Jetson. Your new Jetson joins the same network as a second compute unit — choose a different IP (e.g., `.15` or `.18`) and verify there is no conflict by running `nmap -sn 192.168.123.0/24` before assigning.
+> If you have a GO2 EDU, the built-in compute board (documented at `.13`) is already present on the network. Your new Jetson joins as a second compute unit — choose an unused IP (e.g., `.15` or `.18`) and verify there is no conflict by running `nmap -sn 192.168.123.0/24` before assigning. Exact internal addresses may vary by firmware version, so always scan first.
 
 ---
 
@@ -248,7 +248,7 @@ A: The networking layout is the same across GO2 variants. However, the EDU versi
 ## Safety and Disclaimers
 
 - **Always power off the GO2's motors before testing new software.** Use the Unitree app or the physical power switch to disable motor control while you are developing. An unexpected command can cause the robot to jump or fall.
-- **Do not modify the GO2's internal IP addresses.** The GO2 main control board (192.168.123.161), EDU built-in compute board (192.168.123.13), and other internal devices use hard-coded IPs. Changing them can break the robot's internal communication and may require a factory reset.
+- **Do not modify the GO2's internal IP addresses.** The GO2 main control board (192.168.123.161), EDU built-in compute board (typically 192.168.123.13), and other internal devices use factory-assigned IPs. Changing them can break the robot's internal communication and may require a factory reset.
 - **Secure your Jetson.** If you expose SSH or other services, use key-based authentication and disable password login. The GO2's internal network is not firewalled.
 - **Back up before flashing.** Re-flashing the Jetson erases all data on the target storage device.
 - **Mind the power budget.** The Jetson Orin NX can draw up to 25W. Verify that your power supply and wiring inside the GO2 can handle the load, especially under GPU-intensive workloads.
