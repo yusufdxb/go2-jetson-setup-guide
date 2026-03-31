@@ -86,18 +86,24 @@ sudo iptables -A FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -
 
 **What this does:** Allow return traffic (responses from the internet) to come back through `wlan0` and be forwarded to `eth0` (back to the Jetson). The `RELATED,ESTABLISHED` part means it only allows responses to connections the Jetson started -- it does not open the Jetson to random incoming connections from the internet.
 
-### Step 3: Set the Default Gateway on the Jetson
+### Step 3: Set the Default Gateway and DNS on the Jetson
 
-Tell the Jetson to send all internet-bound traffic to your laptop:
+Tell the Jetson to send all internet-bound traffic to your laptop, and configure DNS for domain name resolution. Both settings are stored in the `go2-network` connection profile so they persist across reboots:
 
 ```bash
-# [Jetson]
-sudo ip route add default via 192.168.123.100
+# [Jetson] Set the laptop as the default gateway (persistent)
+sudo nmcli con mod go2-network ipv4.gateway 192.168.123.100
+
+# [Jetson] Set DNS servers (persistent)
+sudo nmcli con mod go2-network ipv4.dns "8.8.8.8 8.8.4.4"
+
+# [Jetson] Apply the changes
+sudo nmcli con up go2-network
 ```
 
-> `192.168.123.100` is your laptop's IP on the GO2 network (set in the previous guide).
+> `192.168.123.100` is your laptop's IP on the GO2 network (set in the previous guide). The DNS line uses Google's public DNS — you can substitute `1.1.1.1 1.0.0.1` for Cloudflare instead.
 
-**Verify:**
+**Verify the gateway:**
 
 ```bash
 # [Jetson]
@@ -107,41 +113,22 @@ ip route show
 **Expected output** (look for the `default` line):
 
 ```
-default via 192.168.123.100 dev eth0
+default via 192.168.123.100 dev eth0 proto static metric 100
 192.168.123.0/24 dev eth0 proto kernel scope link src 192.168.123.15
 ```
-
-> **If this fails with "RTNETLINK answers: File exists"...** A default route already exists. Check what it is first with `ip route show default`. If it points to an old or incorrect gateway, replace it:
-> ```bash
-> # [Jetson] Replace the existing default route (check the current one first!)
-> sudo ip route replace default via 192.168.123.100
-> ```
-> The `replace` command is safer than `del` + `add` because it atomically swaps the route without a window where no default route exists.
-
-### Step 4: Set DNS on the Jetson
-
-The Jetson needs a DNS server to resolve domain names (like `google.com`).
-
-The reliable way to set DNS that persists across reboots is through NetworkManager:
-
-```bash
-# [Jetson]
-sudo nmcli con mod go2-network ipv4.dns "8.8.8.8 8.8.4.4"
-sudo nmcli con up go2-network
-```
-
-This uses Google's public DNS. You can substitute `1.1.1.1 1.0.0.1` for Cloudflare instead.
 
 **Verify DNS is configured:**
 
 ```bash
 # [Jetson]
-nmcli con show go2-network | grep ipv4.dns
+nmcli con show go2-network | grep -E "ipv4.gateway|ipv4.dns"
 ```
 
-> On JetPack 6.x (Ubuntu 22.04), `/etc/resolv.conf` is managed by `systemd-resolved` and NetworkManager. Writing directly to `/etc/resolv.conf` may get overwritten on reboot. The `nmcli` method above persists correctly.
+> On JetPack 6.x (Ubuntu 22.04), `/etc/resolv.conf` is managed by `systemd-resolved` and NetworkManager. Do not write directly to `/etc/resolv.conf` — your changes will be overwritten. The `nmcli` method above persists correctly.
 
-### Step 5: Verify Internet Access on the Jetson
+> **If `nmcli con up` fails with a route conflict...** Another connection may already have a default route set. Check with `nmcli con show --active` and deactivate any conflicting connections. You can also check the current default route with `ip route show default`.
+
+### Step 4: Verify Internet Access on the Jetson
 
 Run these three tests in order. Each one tests a different layer:
 
@@ -182,11 +169,13 @@ If all three work, the Jetson has full internet access. You can now run `sudo ap
 
 ## Important: Persistence Across Reboots
 
-The iptables rules and IP forwarding setting from the steps above are **not persistent**. They will be lost when you reboot your laptop.
+The **Jetson side** (gateway and DNS) is already persistent — those settings are stored in the `go2-network` NetworkManager profile and survive reboots automatically.
+
+The **laptop side** (iptables rules and IP forwarding) is **not persistent** by default. They will be lost when you reboot your laptop.
 
 ### Quick fix: Re-run the commands
 
-After each laptop reboot, re-run Steps 1 and 2 on the laptop, and Step 3 on the Jetson.
+After each laptop reboot, re-run Steps 1 and 2 on the laptop. The Jetson does not need reconfiguration.
 
 ### Better fix: Use iptables-persistent
 
@@ -378,11 +367,12 @@ The default gateway is not set on the Jetson.
 ip route show
 ```
 
-If there is no `default via ...` line, add it:
+If there is no `default via ...` line, set the gateway in the connection profile:
 
 ```bash
 # [Jetson]
-sudo ip route add default via 192.168.123.100
+sudo nmcli con mod go2-network ipv4.gateway 192.168.123.100
+sudo nmcli con up go2-network
 ```
 
 ### "Laptop lost its own internet after setting up NAT"

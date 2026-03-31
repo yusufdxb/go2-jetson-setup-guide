@@ -77,9 +77,9 @@ sudo nmcli con add type ethernet ifname eth0 con-name go2-network \
 sudo nmcli con up go2-network
 ```
 
-**If using Netplan instead of NetworkManager:**
+**If a Netplan config is interfering:**
 
-Some Jetson setups use Netplan (files in `/etc/netplan/`). Check if a Netplan config is overriding your settings:
+Some Jetson setups have Netplan files in `/etc/netplan/` that can override NetworkManager settings. If your `nmcli` changes are not taking effect, check for conflicting configs:
 
 ```bash
 # [Jetson]
@@ -87,24 +87,7 @@ ls /etc/netplan/
 cat /etc/netplan/*.yaml
 ```
 
-If the Netplan config has a wrong IP or DHCP enabled on the wrong interface, edit it and apply:
-
-```bash
-# [Jetson]
-sudo nano /etc/netplan/01-network.yaml
-sudo netplan apply
-```
-
-The file should look something like this:
-
-```yaml
-network:
-  version: 2
-  ethernets:
-    eth0:
-      addresses:
-        - 192.168.123.15/24
-```
+If a Netplan file sets a conflicting IP or enables DHCP on the same interface, either remove it (`sudo rm /etc/netplan/01-*.yaml && sudo netplan apply`) or edit it to use `renderer: NetworkManager` so NetworkManager remains in control.
 
 ### Verify
 
@@ -248,16 +231,11 @@ If `ping 8.8.8.8` works but `ping google.com` fails with `Temporary failure in n
 
 ```bash
 # [Jetson]
-sudo ip route add default via 192.168.123.100
-```
-
-To make it persistent, edit your network connection:
-
-```bash
-# [Jetson]
-sudo nmcli con modify go2-network ipv4.gateway 192.168.123.100
+sudo nmcli con mod go2-network ipv4.gateway 192.168.123.100
 sudo nmcli con up go2-network
 ```
+
+This stores the gateway in the `go2-network` connection profile so it persists across reboots.
 
 **Enable IP forwarding on the laptop:**
 

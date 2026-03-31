@@ -211,7 +211,7 @@ else
     if [ "$MACHINE" == "jetson" ]; then
         info "If sharing internet from laptop, make sure:"
         info "  1. Laptop is running share_internet_from_laptop.sh"
-        info "  2. Default gateway is set: sudo ip route add default via $LAPTOP_IP"
+        info "  2. Default gateway is set: sudo nmcli con mod go2-network ipv4.gateway $LAPTOP_IP && sudo nmcli con up go2-network"
         info "  3. DNS is set: sudo nmcli con mod go2-network ipv4.dns '8.8.8.8 8.8.4.4' && sudo nmcli con up go2-network"
     fi
     record "Internet" "FAIL"

@@ -248,7 +248,7 @@ A: The networking layout is the same across GO2 variants. However, the EDU versi
 ## Safety and Disclaimers
 
 - **Always power off the GO2's motors before testing new software.** Use the Unitree app or the physical power switch to disable motor control while you are developing. An unexpected command can cause the robot to jump or fall.
-- **Do not modify the GO2's internal IP addresses.** The GO2 head unit (192.168.123.161), body controller (192.168.123.13), and other internal devices use hard-coded IPs. Changing them can break the robot's internal communication and may require a factory reset.
+- **Do not modify the GO2's internal IP addresses.** The GO2 main control board (192.168.123.161), EDU built-in compute board (192.168.123.13), and other internal devices use hard-coded IPs. Changing them can break the robot's internal communication and may require a factory reset.
 - **Secure your Jetson.** If you expose SSH or other services, use key-based authentication and disable password login. The GO2's internal network is not firewalled.
 - **Back up before flashing.** Re-flashing the Jetson erases all data on the target storage device.
 - **Mind the power budget.** The Jetson Orin NX can draw up to 25W. Verify that your power supply and wiring inside the GO2 can handle the load, especially under GPU-intensive workloads.

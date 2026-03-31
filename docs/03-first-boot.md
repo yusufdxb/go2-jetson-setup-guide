@@ -116,33 +116,23 @@ ip link show
 
 Note the name (e.g., `eth0`). If you see something like `enp1s0` or `end0`, use that instead.
 
-### Create a netplan configuration
+### Create the static IP connection with NetworkManager
+
+JetPack 6.x uses NetworkManager to manage network interfaces. Create a connection profile named `go2-network`:
 
 ```bash
-sudo nano /etc/netplan/01-go2-network.yaml
+sudo nmcli con add type ethernet ifname eth0 con-name go2-network \
+  ip4 192.168.123.15/24
 ```
 
-Paste the following (replace `eth0` with your actual interface name if different):
+> Replace `eth0` with your actual interface name if different.
 
-```yaml
-network:
-  version: 2
-  renderer: NetworkManager
-  ethernets:
-    eth0:
-      dhcp4: no
-      addresses:
-        - 192.168.123.15/24
-```
+> **Important**: The GO2 EDU has a built-in compute board at `192.168.123.13`. Before assigning `.15` to your new Jetson, scan the network to confirm it is not already in use: `nmap -sn 192.168.123.0/24`. If `.15` is taken, choose a different unused address like `192.168.123.18`. See [01 -- Hardware Overview](01-hardware-overview.md) for the full IP table.
 
-> **Important**: If your GO2 EDU already has an internal Jetson using `192.168.123.15`, choose a different IP like `192.168.123.18`. Refer to the network table in [01 -- Hardware Overview](01-hardware-overview.md). Scan the network first: `nmap -sn 192.168.123.0/24`.
-
-Save the file (Ctrl+O, Enter, Ctrl+X in nano).
-
-### Apply the configuration
+Bring the connection up:
 
 ```bash
-sudo netplan apply
+sudo nmcli con up go2-network
 ```
 
 **Verification:**
@@ -159,13 +149,9 @@ ip addr show eth0
 ```
 
 **If this fails...**
-- If `netplan apply` shows YAML errors, check your indentation. YAML is sensitive to spaces (use spaces, not tabs). Each indent level is 2 spaces.
 - If the IP does not appear, make sure the Ethernet cable is connected and the interface is up: `sudo ip link set eth0 up`.
-- If you are using NetworkManager and netplan conflicts, you may need to configure the static IP through `nmcli` instead:
-  ```bash
-  sudo nmcli con add type ethernet con-name go2-net ifname eth0 ip4 192.168.123.15/24
-  sudo nmcli con up go2-net
-  ```
+- Check for conflicting connections: `nmcli con show`. If another connection is active on the same interface, deactivate it: `sudo nmcli con down "connection-name"`.
+- If a Netplan config in `/etc/netplan/` is overriding NetworkManager, either remove it or set `renderer: NetworkManager` in the Netplan file and run `sudo netplan apply`.
 
 ---
 

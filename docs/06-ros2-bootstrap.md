@@ -11,8 +11,10 @@ gives you a standard way to:
 - Run SLAM, navigation, and perception pipelines
 - Communicate between the Jetson, your laptop, and the GO2 over the network
 
-If you plan to do anything beyond basic remote-control, ROS 2 is effectively
-required.
+This guide recommends ROS 2 for GO2 development. ROS 2 is required if you
+want to use Unitree's `unitree_ros2` package or integrate with the broader
+ROS ecosystem. However, if you only need direct motor control or sensor
+access, Unitree's `unitree_legged_sdk` (C++ UDP) works without ROS 2.
 
 ## Which Version?
 

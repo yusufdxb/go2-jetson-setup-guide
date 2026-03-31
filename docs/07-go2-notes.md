@@ -188,7 +188,7 @@ Use this table as a quick reference for the devices on the GO2 network.
 | Device | IP Address | Notes |
 |--------|-----------|-------|
 | GO2 Main Board | `192.168.123.161` | Do not change. Standard across all GO2 units. |
-| Jetson (recommended) | `192.168.123.15` | Set in netplan (see networking guide) |
+| Jetson (recommended) | `192.168.123.15` | Set via nmcli (see networking guide) |
 | Laptop (recommended) | `192.168.123.100` | Set on your Ethernet interface |
 | GO2 LiDAR (if present) | varies | Scan the network to discover — see tip below |
 | GO2 Cameras (if present) | varies | Scan the network to discover — see tip below |
