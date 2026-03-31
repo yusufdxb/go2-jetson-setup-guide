@@ -76,13 +76,13 @@ For experienced users who just want the condensed steps:
 4. **Assign a static IP** on the Jetson's Ethernet interface in the `192.168.123.x` range (e.g., `192.168.123.15`).
 
    ```bash
-   # [Jetson] Set static IP via netplan or nmcli
-   sudo nmcli con mod "Wired connection 1" \
-     ipv4.addresses 192.168.123.15/24 \
-     ipv4.gateway 192.168.123.1 \
-     ipv4.method manual
-   sudo nmcli con up "Wired connection 1"
+   # [Jetson] Set static IP via nmcli (no gateway needed yet — that comes in the internet-sharing step)
+   sudo nmcli con add type ethernet ifname eth0 con-name go2-network \
+     ip4 192.168.123.15/24
+   sudo nmcli con up go2-network
    ```
+
+   > Replace `eth0` with your actual Ethernet interface name (check with `ip link show`).
 
 5. **SSH into the Jetson from your laptop:**
 

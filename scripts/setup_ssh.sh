@@ -70,7 +70,7 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Step 3: Enable and start sshd
+# Step 3: Enable and start the SSH service
 # ---------------------------------------------------------------------------
 info "Enabling and starting SSH service..."
 

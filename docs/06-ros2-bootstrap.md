@@ -329,10 +329,13 @@ cat << 'EOF' > ~/cyclonedds/cyclonedds.xml
     <Discovery>
       <ParticipantIndex>auto</ParticipantIndex>
       <Peers>
-        <!-- List all machines that should discover each other -->
+        <!-- List all machines running ROS 2 nodes -->
         <Peer address="192.168.123.15"/>   <!-- Jetson -->
         <Peer address="192.168.123.100"/>  <!-- Laptop -->
-        <Peer address="192.168.123.161"/>  <!-- GO2 main board -->
+        <!-- Do NOT add 192.168.123.161 here unless you have confirmed
+             that a ROS 2 / DDS node is running on the GO2 main board.
+             The GO2 main board uses Unitree's own UDP protocol by default,
+             not DDS. -->
       </Peers>
     </Discovery>
   </Domain>

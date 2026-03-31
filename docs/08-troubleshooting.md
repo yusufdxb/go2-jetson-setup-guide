@@ -473,7 +473,7 @@ sudo nmcli con modify go2-network ipv4.addresses 192.168.123.18/24
 sudo nmcli con up go2-network
 ```
 
-> Pick any unused address on `192.168.123.x` that is not already taken by the GO2 (`192.168.123.161`), the built-in Jetson (`.13` or `.15`), or your laptop (`.100`).
+> Pick any unused address on `192.168.123.x` that is not already taken by the GO2 main board (`.161`), the EDU built-in compute board (`.13`), or your laptop (`.100`). Scan the network first with `nmap -sn 192.168.123.0/24` to see what is in use.
 
 **If the subnet mask is wrong** (e.g., `/32` instead of `/24`):
 
@@ -781,7 +781,8 @@ cat > ~/cyclone_dds/cyclone_dds.xml << 'XMLEOF'
     <Discovery>
       <Peers>
         <Peer address="192.168.123.100" />
-        <Peer address="192.168.123.161" />
+        <!-- Only add 192.168.123.161 if a ROS 2 / DDS node is confirmed running on the GO2.
+             The GO2 main board uses Unitree's own UDP protocol by default, not DDS. -->
       </Peers>
       <ParticipantIndex>auto</ParticipantIndex>
     </Discovery>
@@ -790,7 +791,7 @@ cat > ~/cyclone_dds/cyclone_dds.xml << 'XMLEOF'
 XMLEOF
 ```
 
-> Edit the `<Peer>` addresses to include all machines you want to communicate with. Replace `eth0` with your actual interface name.
+> Edit the `<Peer>` addresses to include all machines running ROS 2 nodes. Replace `eth0` with your actual interface name. Do **not** add the GO2 main board (`.161`) unless you have confirmed it is running a DDS-based ROS 2 stack.
 
 Create a similar file on the laptop, but list the Jetson's IP as a peer:
 
@@ -811,7 +812,6 @@ cat > ~/cyclone_dds/cyclone_dds.xml << 'XMLEOF'
     <Discovery>
       <Peers>
         <Peer address="192.168.123.15" />
-        <Peer address="192.168.123.161" />
       </Peers>
       <ParticipantIndex>auto</ParticipantIndex>
     </Discovery>
@@ -1072,7 +1072,7 @@ ros2 topic list
 | Check NAT rules | `sudo iptables -t nat -L -n -v` | Laptop |
 | Check firewall | `sudo ufw status` | Any |
 | Check SSH service | `sudo systemctl status ssh` | Jetson |
-| Check DNS config | `cat /etc/resolv.conf` | Jetson |
+| Check DNS config | `resolvectl status` | Jetson |
 | Scan network for devices | `nmap -sn 192.168.123.0/24` | Any |
 | Monitor Jetson thermals | `sudo jtop` | Jetson |
 | Check power mode | `sudo nvpmodel -q` | Jetson |

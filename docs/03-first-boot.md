@@ -80,7 +80,7 @@ sudo systemctl status ssh
 
 ```
 ● ssh.service - OpenBSD Secure Shell server
-     Loaded: loaded (/lib/systemd/lib/ssh.service; enabled; ...)
+     Loaded: loaded (/lib/systemd/system/ssh.service; enabled; ...)
      Active: active (running) since ...
 ```
 

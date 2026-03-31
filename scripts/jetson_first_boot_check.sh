@@ -180,7 +180,7 @@ if systemctl is-active --quiet ssh 2>/dev/null || systemctl is-active --quiet ss
     pass "SSH server is running"
     record "SSH Server" "PASS"
 else
-    fail "SSH server is NOT running — run setup_ssh.sh to fix"
+    fail "SSH server is NOT running — run: sudo ./scripts/setup_ssh.sh"
     record "SSH Server" "FAIL"
 fi
 

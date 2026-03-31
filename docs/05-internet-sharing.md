@@ -111,7 +111,12 @@ default via 192.168.123.100 dev eth0
 192.168.123.0/24 dev eth0 proto kernel scope link src 192.168.123.15
 ```
 
-> **If this fails with "RTNETLINK answers: File exists"...** A default route already exists. Remove it first: `sudo ip route del default`, then re-run the command above.
+> **If this fails with "RTNETLINK answers: File exists"...** A default route already exists. Check what it is first with `ip route show default`. If it points to an old or incorrect gateway, replace it:
+> ```bash
+> # [Jetson] Replace the existing default route (check the current one first!)
+> sudo ip route replace default via 192.168.123.100
+> ```
+> The `replace` command is safer than `del` + `add` because it atomically swaps the route without a window where no default route exists.
 
 ### Step 4: Set DNS on the Jetson
 
@@ -338,26 +343,28 @@ This is a DNS issue. The Jetson can reach the internet but cannot resolve domain
 
 **Fix:**
 
-```bash
-# [Jetson]
-echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
-```
+On JetPack 6.x (Ubuntu 22.04), `/etc/resolv.conf` is typically managed by `systemd-resolved` via NetworkManager. Do **not** write to `/etc/resolv.conf` directly — your changes will be overwritten on the next reboot or network event.
 
-Check if something is overwriting your resolv.conf:
-
-```bash
-# [Jetson]
-ls -la /etc/resolv.conf
-```
-
-If it is a symlink (managed by `systemd-resolved`), configure DNS through NetworkManager instead — do not disable systemd-resolved:
+Instead, configure DNS through NetworkManager:
 
 ```bash
 # [Jetson]
 sudo nmcli con mod go2-network ipv4.dns "8.8.8.8 8.8.4.4"
 sudo nmcli con up go2-network
-# Verify:
+```
+
+**Verify:**
+
+```bash
+# [Jetson]
 resolvectl status
+```
+
+Look for your DNS servers listed under the Ethernet interface section. Then test:
+
+```bash
+# [Jetson]
+ping -c 3 google.com
 ```
 
 ### "No route to host" from Jetson when pinging external IPs
@@ -382,12 +389,21 @@ sudo ip route add default via 192.168.123.100
 
 You likely used the wrong interface name in the iptables rules. If you accidentally masquerade on the Jetson-facing interface instead of the internet-facing one, things will break.
 
-**Fix:** Flush the iptables rules and start over:
+**Fix:** Remove only the rules you added (do **not** flush the entire chain — that can break Docker, VMs, and other services that also use iptables):
+
+```bash
+# [Laptop] Remove the specific rules that were added incorrectly.
+# Replace <wrong_iface> with whatever you mistakenly used.
+sudo iptables -t nat -D POSTROUTING -o <wrong_iface> -j MASQUERADE
+sudo iptables -D FORWARD -i <wrong_iface> -o <other_iface> -j ACCEPT
+sudo iptables -D FORWARD -i <other_iface> -o <wrong_iface> -m state --state RELATED,ESTABLISHED -j ACCEPT
+```
+
+If you used the helper script, run `--clean` with the same interfaces you originally passed:
 
 ```bash
 # [Laptop]
-sudo iptables -t nat -F
-sudo iptables -F FORWARD
+sudo ./scripts/share_internet_from_laptop.sh --clean <wrong_inet_iface> <wrong_jetson_iface>
 ```
 
 Then re-run the iptables commands from Step 2 with the correct interface names. Double-check with:
@@ -405,7 +421,7 @@ Make sure your laptop's SSH server is running:
 
 ```bash
 # [Laptop]
-sudo systemctl status sshd
+sudo systemctl status ssh
 ```
 
 If it is not running:
@@ -413,8 +429,10 @@ If it is not running:
 ```bash
 # [Laptop]
 sudo apt install openssh-server
-sudo systemctl enable --now sshd
+sudo systemctl enable --now ssh
 ```
+
+> On Ubuntu, the SSH service is named `ssh`, not `sshd`. Some other distributions use `sshd`.
 
 ---
 

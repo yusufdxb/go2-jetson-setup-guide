@@ -35,7 +35,14 @@ Laptop  ----USB Ethernet adapter---->  Jetson (direct)
 Laptop  ----Wi-Fi or another cable---->  GO2
 ```
 
-This option uses a USB Ethernet adapter on your laptop to connect directly to the Jetson. You then connect to the GO2 separately (for example, over the GO2's Wi-Fi). This is more complex and generally not needed for most setups.
+This option uses a USB Ethernet adapter on your laptop to connect directly to the Jetson. You then connect to the GO2 separately (for example, over the GO2's Wi-Fi hotspot on the `192.168.12.x` subnet).
+
+> **Warning — routing implications:** With this setup, your laptop talks to the Jetson and the GO2 on **different subnets** through **different interfaces**. The Jetson and the GO2 are not on the same Layer 2 network unless the Jetson is also connected to the GO2's internal switch via a separate cable. This means:
+> - The Jetson may not be able to reach the GO2 main board at `192.168.123.161` unless it has its own Ethernet connection to the GO2's internal switch.
+> - Internet sharing from the laptop to the Jetson requires careful routing rules since the laptop now has multiple network paths.
+> - You may need to manage routes manually on the laptop to avoid traffic going out the wrong interface.
+>
+> **This setup is more complex and generally not needed.** Option A is strongly recommended unless you have a specific reason to isolate the Jetson from the GO2's internal network.
 
 ---
 

@@ -156,16 +156,22 @@ Read this section carefully before running any code on the GO2.
 3. **Never run untested low-level motor commands with the robot on the ground.**
    A bad torque command can cause a leg to slam down or the robot to flip.
 
-4. **The GO2 has built-in protection mode.** If it detects abnormal motor
-   commands (excessive torque, impossible joint angles), it will cut motor
-   power and collapse. This protects the hardware but can still result in a
-   fall.
+4. **The GO2 has built-in protection features.** According to Unitree's
+   documentation, the firmware may cut motor power if it detects abnormal
+   commands (excessive torque, impossible joint angles). However, do not rely
+   on this as a safety guarantee — protection thresholds may vary by firmware
+   version, and a fall can still cause damage to the robot or surroundings.
 
-5. **If the robot starts behaving unexpectedly:**
-   - Press the power button once to make it sit down
-   - Use the emergency stop on the remote
-   - As a last resort, hold the power button to force shutdown
-   - If your code is the problem, Ctrl+C the process on the Jetson
+5. **If the robot starts behaving unexpectedly**, try these in order (none are
+   guaranteed to work in every situation — always keep a safe distance):
+   - Press the power button once — on most firmware versions, this triggers a
+     sit-down sequence, but behavior may vary by firmware
+   - Use the emergency stop on the remote controller if available
+   - As a last resort, hold the power button for several seconds to force a
+     hard shutdown — the robot will collapse without a controlled sit-down
+   - If your code is the problem, Ctrl+C the process on the Jetson — note that
+     the robot may continue its last command briefly until the control loop
+     times out
 
 6. **Do not stand directly over the robot** while testing. Stand to the side.
    A sudden leg movement can strike you.

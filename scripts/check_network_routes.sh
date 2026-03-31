@@ -39,31 +39,46 @@ record() {
 }
 
 # ---------------------------------------------------------------------------
-# Known IPs on the GO2 network
+# Default IPs (from the guide). Override with environment variables if your
+# setup uses different addresses:
+#   JETSON_IP=192.168.123.18 LAPTOP_IP=192.168.123.50 ./check_network_routes.sh
 # ---------------------------------------------------------------------------
-JETSON_IP="192.168.123.15"
-LAPTOP_IP="192.168.123.100"
-GO2_IP="192.168.123.161"
+JETSON_IP="${JETSON_IP:-192.168.123.15}"
+LAPTOP_IP="${LAPTOP_IP:-192.168.123.100}"
+GO2_IP="${GO2_IP:-192.168.123.161}"
 
 # ---------------------------------------------------------------------------
 # Auto-detect which machine we are running on
-#   Check if any local interface has the Jetson or Laptop IP.
+#   First try the configured IPs, then fall back to checking for any
+#   192.168.123.x address on a local interface.
 # ---------------------------------------------------------------------------
 header "Machine Detection"
 
 MY_IPS=$(ip -4 addr show | grep inet | awk '{print $2}' | cut -d/ -f1)
 MACHINE="unknown"
+MY_GO2_NET_IP=""
 
 if echo "$MY_IPS" | grep -q "^${JETSON_IP}$"; then
     MACHINE="jetson"
+    MY_GO2_NET_IP="$JETSON_IP"
     info "Detected: Running on the ${BOLD}Jetson${NC} ($JETSON_IP)"
 elif echo "$MY_IPS" | grep -q "^${LAPTOP_IP}$"; then
     MACHINE="laptop"
+    MY_GO2_NET_IP="$LAPTOP_IP"
     info "Detected: Running on the ${BOLD}Laptop${NC} ($LAPTOP_IP)"
 else
-    warn "Could not auto-detect machine by IP."
-    warn "Neither $JETSON_IP (Jetson) nor $LAPTOP_IP (Laptop) found on local interfaces."
-    info "Will run all checks anyway."
+    # Check if we have any 192.168.123.x address at all
+    MY_GO2_NET_IP=$(echo "$MY_IPS" | grep "^192\.168\.123\." | head -1)
+    if [ -n "$MY_GO2_NET_IP" ]; then
+        warn "Found 192.168.123.x address ($MY_GO2_NET_IP) but it does not match"
+        warn "the expected Jetson IP ($JETSON_IP) or Laptop IP ($LAPTOP_IP)."
+        warn "If you used different IPs, set JETSON_IP or LAPTOP_IP env vars before running."
+        info "Will run all checks using detected IP $MY_GO2_NET_IP."
+    else
+        warn "No 192.168.123.x address found on any local interface."
+        warn "This machine may not be connected to the GO2 network yet."
+        info "Will run all checks anyway."
+    fi
 fi
 
 # ---------------------------------------------------------------------------
@@ -172,9 +187,12 @@ if $DNS_OK; then
     pass "DNS resolution works"
     record "DNS Resolution" "PASS"
 else
-    fail "DNS resolution failed — check /etc/resolv.conf"
+    fail "DNS resolution failed — check DNS config with: resolvectl status"
     # Show current DNS config for debugging
-    if [ -f /etc/resolv.conf ]; then
+    if command -v resolvectl &>/dev/null; then
+        info "Current DNS configuration:"
+        resolvectl status 2>/dev/null | grep -A2 "DNS Servers" | sed 's/^/    /'
+    elif [ -f /etc/resolv.conf ]; then
         info "Current /etc/resolv.conf:"
         grep -v '^#' /etc/resolv.conf | grep -v '^$' | sed 's/^/    /'
     fi
@@ -194,7 +212,7 @@ else
         info "If sharing internet from laptop, make sure:"
         info "  1. Laptop is running share_internet_from_laptop.sh"
         info "  2. Default gateway is set: sudo ip route add default via $LAPTOP_IP"
-        info "  3. DNS is set: echo 'nameserver 8.8.8.8' | sudo tee /etc/resolv.conf"
+        info "  3. DNS is set: sudo nmcli con mod go2-network ipv4.dns '8.8.8.8 8.8.4.4' && sudo nmcli con up go2-network"
     fi
     record "Internet" "FAIL"
 fi
