@@ -24,18 +24,18 @@ If you do not have a monitor available, you can use a serial console:
 **[Laptop]**
 
 ```bash
-# Connect a micro-USB or USB-C serial debug cable from the Jetson's debug port to your laptop.
-# Find the serial device:
+# Connect a USB serial debug cable from the Jetson carrier board's debug/UART port to your laptop.
+# Find the serial device (the exact device node depends on your USB-serial adapter):
 ls /dev/ttyUSB* /dev/ttyACM*
 ```
 
 ```bash
-# Connect (common baud rate is 115200):
+# Connect at 115200 baud:
 sudo apt install -y screen
 sudo screen /dev/ttyUSB0 115200
 ```
 
-<!-- TODO: confirm the debug serial port location on the NVIDIA DevKit Orin carrier board -- some use ttyACM0 instead of ttyUSB0 -->
+> The NVIDIA Orin DevKit carrier board exposes a USB debug port. When connected, it typically appears as `/dev/ttyACM0` on the host. Third-party carrier boards vary — check your board's documentation for the UART debug port location.
 
 ---
 
@@ -133,14 +133,9 @@ network:
       dhcp4: no
       addresses:
         - 192.168.123.15/24
-      routes:
-        - to: 192.168.123.0/24
-          via: 192.168.123.15
 ```
 
-> **Important**: If your GO2 EDU already has an internal Jetson using `192.168.123.15`, choose a different IP like `192.168.123.18`. Refer to the network table in [01 -- Hardware Overview](01-hardware-overview.md).
-
-<!-- TODO: the route entry above is technically for the local subnet and may not be needed since the address assignment implies it. Test whether removing the routes block still allows communication. -->
+> **Important**: If your GO2 EDU already has an internal Jetson using `192.168.123.15`, choose a different IP like `192.168.123.18`. Refer to the network table in [01 -- Hardware Overview](01-hardware-overview.md). Scan the network first: `nmap -sn 192.168.123.0/24`.
 
 Save the file (Ctrl+O, Enter, Ctrl+X in nano).
 
@@ -186,10 +181,12 @@ This can take several minutes. It updates all packages including any JetPack com
 
 **If this fails...**
 - Make sure the Jetson has internet access. If it only has the static GO2 Ethernet configured, connect via Wi-Fi or a second Ethernet port for internet.
-- If you see GPG key errors for NVIDIA repos, run:
+- If you see GPG key errors for NVIDIA repos, fetch the key using the modern keyring approach:
   ```bash
-  sudo apt-key adv --fetch-keys https://repo.download.nvidia.com/jetson/jetson-ota-public.asc
+  sudo curl -fsSL https://repo.download.nvidia.com/jetson/jetson-ota-public.asc \
+    -o /usr/share/keyrings/nvidia-jetson-ota.gpg
   ```
+  Then update your NVIDIA apt source entries to reference `signed-by=/usr/share/keyrings/nvidia-jetson-ota.gpg`. Check `/etc/apt/sources.list.d/` for the NVIDIA repo files.
 
 ---
 
@@ -321,17 +318,7 @@ chmod +x scripts/jetson_first_boot_check.sh
 ./scripts/jetson_first_boot_check.sh
 ```
 
-<!-- TODO: create the scripts/jetson_first_boot_check.sh script in this repo. It should check:
-  - SSH is enabled and running
-  - Static IP is configured on the correct interface
-  - CUDA is installed and in PATH
-  - jtop / jetson-stats is installed
-  - Free disk space is sufficient (> 10 GB)
-  - Jetson model and JetPack version
-  - Network connectivity to 192.168.123.161 (GO2 MCU) if connected
--->
-
-The script will print a summary of pass/fail checks. Fix any failures before proceeding to mount the Jetson on the GO2.
+The script checks: OS version, CUDA, GPU, disk space, RAM, SSH server, internet connectivity, and jtop. It prints a PASS/FAIL/WARN summary. Fix any FAIL items before mounting the Jetson on the GO2.
 
 ---
 

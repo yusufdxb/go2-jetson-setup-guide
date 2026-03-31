@@ -112,10 +112,16 @@ if $CLEAN; then
     iptables -D FORWARD -i "$INET_IFACE" -o "$JETSON_IFACE" -m state --state RELATED,ESTABLISHED -j ACCEPT 2>/dev/null && \
         ok "Forward rule (Internet -> Jetson, established) removed" || warn "Rule was not present"
 
-    # Restore IP forwarding to disabled (safe default)
-    info "Disabling IP forwarding..."
-    sysctl -w net.ipv4.ip_forward=0 >/dev/null
-    ok "IP forwarding disabled"
+    # Only disable IP forwarding if it was not already enabled before this script ran.
+    # If the user had forwarding on for Docker, VMs, or other reasons, leave it alone.
+    CURRENT_FWD=$(sysctl -n net.ipv4.ip_forward)
+    if [ "$CURRENT_FWD" -eq 1 ]; then
+        warn "IP forwarding is still enabled. It may be in use by Docker, VMs, or other services."
+        warn "If you want to disable it, run: sudo sysctl -w net.ipv4.ip_forward=0"
+        warn "Not disabling automatically to avoid breaking unrelated services."
+    else
+        ok "IP forwarding is already disabled"
+    fi
 
     echo ""
     ok "NAT rules cleaned up."

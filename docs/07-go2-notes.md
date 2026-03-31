@@ -58,20 +58,17 @@ The Jetson is typically mounted on the GO2's back (dorsal) surface.
 
 ### GO2 EDU Power Output
 
-The GO2 EDU provides a power output (typically **24V**) for external compute
-devices. However, your Jetson carrier board likely expects a different voltage:
+The GO2 EDU provides a power output for external compute devices. The exact voltage and connector are documented in Unitree's hardware manual for your firmware version — obtain this from Unitree's support portal before wiring anything.
+
+As a general reference from community reports, the payload rail is in the 24V range, but **measure with a multimeter before connecting**. Your Jetson carrier board likely expects a different voltage:
 
 | Jetson Setup | Expected Input Voltage |
 |-------------|----------------------|
-| Orin NX/Nano on a third-party carrier board | Typically 12V or 19V (check your carrier board datasheet) |
-| Orin Nano Developer Kit | 5V via USB-C (up to 25W), or DC barrel jack |
+| Orin NX/Nano on a third-party carrier board | Check your carrier board's datasheet — commonly 12V or 19V |
+| Orin NX/Nano Developer Kit (NVIDIA) | 9–20V via barrel jack |
+| Orin Nano Developer Kit (NVIDIA) | 5V via USB-C (up to 25W) |
 
-<!-- TODO: verify exact power output voltage and connector on GO2 EDU -->
-<!-- TODO: verify power requirements for your specific carrier board -->
-
-You will likely need a **DC-DC converter** (buck converter) to step the GO2's
-24V output down to whatever your carrier board expects. Make sure the converter
-can handle the current draw — the Orin NX can pull up to 25W under load.
+You will likely need a **DC-DC converter** (buck converter) to step down to whatever your carrier board expects. Size it for at least 30W to handle the Orin NX's 25W peak draw plus converter losses.
 
 ### During Initial Setup
 
@@ -88,13 +85,12 @@ working.
 
 Unitree provides two main SDKs:
 
-- **unitree_legged_sdk** — C++ library for sending commands and receiving state
-  over UDP
-- **unitree_ros2** — ROS 2 wrapper around the SDK, providing standard ROS 2
-  topics and services
+- **unitree_legged_sdk** — C++ library for sending commands and receiving state over UDP. Does not depend on ROS 2.
+- **unitree_ros2** — ROS 2 wrapper around the SDK, providing GO2 state and control over standard ROS 2 topics and services.
 
-Both communicate with the GO2 main board over UDP on the `192.168.123.x`
-network.
+Both communicate with the GO2 main board over UDP on the `192.168.123.x` network.
+
+**Installing ROS 2 alone does not make GO2 topics appear.** You must separately clone, build, and configure `unitree_ros2` (or the base SDK) before you will see robot-specific topics from `ros2 topic list`. Start here: https://github.com/unitreerobotics/unitree_ros2
 
 ### Control Levels
 
@@ -103,7 +99,8 @@ The GO2 supports two levels of control:
 **High-level control** (start here):
 - Send velocity commands: walk forward/backward, strafe, turn
 - The GO2's internal controller handles gait, balance, and foot placement
-- Safe for beginners — the robot will not do anything destructive
+- Lower risk than low-level control, but the robot will still walk, which means it can fall off surfaces, walk into obstacles, or tip over on uneven terrain
+- Always test with the robot on a flat, clear surface with no drop-offs nearby
 - Example: "walk forward at 0.3 m/s"
 
 **Low-level control** (advanced):
@@ -187,12 +184,10 @@ Use this table as a quick reference for the devices on the GO2 network.
 | GO2 Main Board | `192.168.123.161` | Do not change. Standard across all GO2 units. |
 | Jetson (recommended) | `192.168.123.15` | Set in netplan (see networking guide) |
 | Laptop (recommended) | `192.168.123.100` | Set on your Ethernet interface |
-| GO2 LiDAR (if present) | `192.168.123.x` | Varies by model and configuration |
-| GO2 Cameras (if present) | `192.168.123.x` | Varies by model and configuration |
+| GO2 LiDAR (if present) | varies | Scan the network to discover — see tip below |
+| GO2 Cameras (if present) | varies | Scan the network to discover — see tip below |
 
-<!-- TODO: fill in exact LiDAR and camera IPs for GO2 EDU if available -->
-
-> **Tip:** You can scan the network to discover devices:
+> **Tip:** You can scan the network to discover all active devices:
 > ```bash
 > # [Jetson]
 > sudo apt install nmap -y

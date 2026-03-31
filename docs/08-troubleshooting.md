@@ -289,17 +289,27 @@ sudo iptables -A FORWARD -i wlan0 -o eth0 -m state --state RELATED,ESTABLISHED -
 
 **Fix DNS (if `ping 8.8.8.8` works but `ping google.com` does not):**
 
+The persistent fix is to configure DNS through NetworkManager:
+
 ```bash
 # [Jetson]
-echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
-echo "nameserver 8.8.4.4" | sudo tee -a /etc/resolv.conf
+sudo nmcli con mod go2-network ipv4.dns "8.8.8.8 8.8.4.4"
+sudo nmcli con up go2-network
 ```
 
-> On systems using `systemd-resolved`, you may also need:
-> ```bash
-> # [Jetson]
-> sudo systemctl restart systemd-resolved
-> ```
+To verify the setting took effect:
+
+```bash
+# [Jetson]
+resolvectl status
+```
+
+Look for the DNS server listed under your Ethernet interface. If DNS is still failing, restart the resolver:
+
+```bash
+# [Jetson]
+sudo systemctl restart systemd-resolved
+```
 
 ### Verify
 

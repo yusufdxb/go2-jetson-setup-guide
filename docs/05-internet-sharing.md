@@ -115,19 +115,26 @@ default via 192.168.123.100 dev eth0
 
 ### Step 4: Set DNS on the Jetson
 
-The Jetson needs a DNS server to turn domain names (like `google.com`) into IP addresses:
+The Jetson needs a DNS server to resolve domain names (like `google.com`).
+
+The reliable way to set DNS that persists across reboots is through NetworkManager:
 
 ```bash
 # [Jetson]
-echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+sudo nmcli con mod go2-network ipv4.dns "8.8.8.8 8.8.4.4"
+sudo nmcli con up go2-network
 ```
 
-This uses Google's public DNS server. You can also use `1.1.1.1` (Cloudflare) or any other public DNS.
+This uses Google's public DNS. You can substitute `1.1.1.1 1.0.0.1` for Cloudflare instead.
 
-<!-- TODO: On some Jetson setups, /etc/resolv.conf is managed by systemd-resolved or NetworkManager
-     and may get overwritten. If DNS stops working after a reboot, check if resolv.conf was
-     reset and consider configuring DNS through nmcli instead:
-     sudo nmcli con mod go2-network ipv4.dns "8.8.8.8" -->
+**Verify DNS is configured:**
+
+```bash
+# [Jetson]
+nmcli con show go2-network | grep ipv4.dns
+```
+
+> On JetPack 6.x (Ubuntu 22.04), `/etc/resolv.conf` is managed by `systemd-resolved` and NetworkManager. Writing directly to `/etc/resolv.conf` may get overwritten on reboot. The `nmcli` method above persists correctly.
 
 ### Step 5: Verify Internet Access on the Jetson
 
@@ -200,9 +207,21 @@ net.ipv4.ip_forward=1
 
 ### Best fix: Use the helper script
 
-See `scripts/share_internet_from_laptop.sh` in this repository for a script that sets up everything in one command.
+The `scripts/share_internet_from_laptop.sh` script sets up everything in one command. It validates your interface names, avoids adding duplicate rules, and prints the exact commands to run on the Jetson:
 
-<!-- TODO: Create scripts/share_internet_from_laptop.sh with auto-detection of interfaces -->
+```bash
+# [Laptop]
+sudo ./scripts/share_internet_from_laptop.sh <internet_iface> <jetson_iface>
+# Example:
+sudo ./scripts/share_internet_from_laptop.sh wlan0 eth0
+```
+
+To remove the rules:
+
+```bash
+# [Laptop]
+sudo ./scripts/share_internet_from_laptop.sh --clean wlan0 eth0
+```
 
 ---
 
@@ -234,15 +253,17 @@ This creates a SOCKS5 proxy on the Jetson at `localhost:1080` that tunnels traff
 curl --proxy socks5h://localhost:1080 https://httpbin.org/ip
 ```
 
-**apt** (via apt.conf):
+**apt** via an HTTP proxy tunnel (more reliable for apt than SOCKS):
+
+Instead of a SOCKS proxy, create an HTTP proxy with port forwarding:
 
 ```bash
-# [Jetson]
-echo 'Acquire::socks::proxy "socks5h://localhost:1080";' | sudo tee /etc/apt/apt.conf.d/99proxy
+# [Jetson] — forward local port 8080 to the laptop's squid/http proxy if available
+# Or use the SOCKS proxy with apt via:
+echo 'Acquire::http::Proxy "socks5h://localhost:1080";' | sudo tee /etc/apt/apt.conf.d/99proxy
 ```
 
-<!-- TODO: Verify the exact apt.conf syntax for SOCKS proxies -- apt's proxy support for SOCKS
-     may vary by version. HTTP proxy via ssh -L may be more reliable for apt. -->
+> apt's SOCKS proxy support depends on the version. If apt downloads fail through the proxy, the NAT method in the main section is more reliable.
 
 **pip:**
 
@@ -329,13 +350,14 @@ Check if something is overwriting your resolv.conf:
 ls -la /etc/resolv.conf
 ```
 
-If it is a symlink (managed by `systemd-resolved`), you may need to configure DNS differently:
+If it is a symlink (managed by `systemd-resolved`), configure DNS through NetworkManager instead — do not disable systemd-resolved:
 
 ```bash
 # [Jetson]
-sudo systemctl disable systemd-resolved
-sudo rm /etc/resolv.conf
-echo "nameserver 8.8.8.8" | sudo tee /etc/resolv.conf
+sudo nmcli con mod go2-network ipv4.dns "8.8.8.8 8.8.4.4"
+sudo nmcli con up go2-network
+# Verify:
+resolvectl status
 ```
 
 ### "No route to host" from Jetson when pinging external IPs

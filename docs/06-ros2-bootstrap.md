@@ -231,6 +231,19 @@ Press `Ctrl+C` in both terminals to stop.
 
 ---
 
+## What ROS 2 Alone Does NOT Do
+
+Installing ROS 2 gets you the middleware and tooling. It does **not** automatically make GO2 robot topics appear. After this guide, running `ros2 topic list` will show only the default topics (`/parameter_events`, `/rosout`) unless you have nodes publishing data.
+
+To communicate with the GO2, you additionally need **one of**:
+
+- **[unitree_ros2](https://github.com/unitreerobotics/unitree_ros2)** — Unitree's official ROS 2 package that wraps the Unitree SDK and exposes GO2 state and control over ROS 2 topics/services. This requires building from source in your workspace.
+- **unitree_legged_sdk** — The lower-level C++ UDP SDK. Does not require ROS 2 but has no ROS integration out of the box.
+
+The setup for `unitree_ros2` is outside the scope of this guide. Start with the [unitree_ros2 GitHub repository](https://github.com/unitreerobotics/unitree_ros2) and its README after completing the steps here. Verify basic ROS 2 communication (talker/listener below) before moving on to the Unitree stack.
+
+---
+
 ## Workspace Setup
 
 A ROS 2 workspace is where you put your own packages and any packages you

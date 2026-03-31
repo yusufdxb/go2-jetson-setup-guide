@@ -178,13 +178,10 @@ If you prefer not to use SDK Manager's GUI, you can flash from the command line.
 
 **[Laptop]**
 
-```bash
-# Download and extract the L4T BSP and root filesystem from NVIDIA's developer site.
-# The exact filenames change with each release. Check:
-# https://developer.nvidia.com/linux-tegra
+The filenames for L4T packages change with each release. Go to https://developer.nvidia.com/linux-tegra and download the correct BSP and sample root filesystem for your JetPack version. The general process:
 
-# Example for a hypothetical JetPack 6.x release:
-# TODO: update these filenames to match the actual latest JetPack 6.x release
+```bash
+# Filenames below are illustrative — use the actual filenames from the download page
 cd ~/Downloads
 tar xf Jetson_Linux_R36.*_aarch64.tbz2
 cd Linux_for_Tegra/rootfs/
@@ -193,17 +190,21 @@ cd ..
 sudo ./apply_binaries.sh
 ```
 
-Then flash (with the Jetson in recovery mode):
+Then flash (with the Jetson in recovery mode). The board config name depends on your module and carrier board. For the NVIDIA DevKit:
 
 ```bash
-# For Jetson Orin NX on DevKit carrier board:
-sudo ./flash.sh jetson-orin-nx-devkit-16gb internal
+# List available board configs to find the right one for your hardware:
+ls ./bootloader/
 
-# For Jetson Orin Nano on DevKit carrier board:
+# Common configs for the NVIDIA DevKit carrier board:
+# Jetson Orin NX 16GB:
+sudo ./flash.sh jetson-orin-nx-devkit internal
+
+# Jetson Orin Nano 8GB:
 sudo ./flash.sh jetson-orin-nano-devkit internal
 ```
 
-<!-- TODO: verify the exact board config names (jetson-orin-nx-devkit-16gb, etc.) for the latest L4T release. Run `ls flash.sh` configs to check. -->
+> If you are using a third-party carrier board (Seeed reComputer, Auvidea, etc.), you must use the board config file provided by that manufacturer — the NVIDIA DevKit configs will not work. Check the manufacturer's BSP documentation.
 
 **If the flash fails...**
 - Check `lsusb` again to make sure the Jetson is still in recovery mode.

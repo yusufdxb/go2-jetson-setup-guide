@@ -14,6 +14,23 @@ No prior Jetson or ROS experience is assumed. If you can open a terminal and typ
 
 ---
 
+## Support Matrix
+
+This guide targets one specific, tested configuration. Other combinations may work but are not covered here.
+
+| Component | This Guide | Notes |
+|-----------|-----------|-------|
+| **Jetson module** | Orin NX 16 GB or Orin Nano 8 GB | Both use the same carrier board form factor |
+| **JetPack** | **6.x (latest)** | Provides Ubuntu 22.04 and CUDA 12.x |
+| **Host OS (Jetson)** | Ubuntu 22.04 (Jammy) | Comes with JetPack 6.x |
+| **ROS 2** | Humble Hawksbill (LTS) | Binary install from apt; requires Ubuntu 22.04 |
+| **GO2 model** | EDU (tested) | PRO may work — see [docs/07-go2-notes.md](docs/07-go2-notes.md) |
+| **Host laptop** | Ubuntu 22.04 recommended | Ubuntu 20.04 also works for flashing |
+
+**If you are using JetPack 5.x:** JetPack 5.x supports Orin modules (from 5.0.2+) and runs Ubuntu 20.04. On Ubuntu 20.04, ROS 2 Humble binaries are not available from apt; you would need ROS 2 Galactic or build Humble from source. This guide does not cover the JetPack 5.x path. Upgrading to JetPack 6.x is strongly recommended for new setups.
+
+---
+
 ## What's Covered
 
 - Flashing JetPack OS onto the Jetson
@@ -53,7 +70,7 @@ No prior Jetson or ROS experience is assumed. If you can open a terminal and typ
 
 For experienced users who just want the condensed steps:
 
-1. **Flash JetPack 5.x** onto the Jetson using NVIDIA SDK Manager from your laptop.
+1. **Flash JetPack 6.x** onto the Jetson using NVIDIA SDK Manager from your laptop.
 2. **Boot the Jetson** and complete the OEM setup (user account, locale, etc.).
 3. **Connect via Ethernet** -- plug the Jetson into the GO2's internal network switch.
 4. **Assign a static IP** on the Jetson's Ethernet interface in the `192.168.123.x` range (e.g., `192.168.123.15`).
@@ -82,12 +99,7 @@ For experienced users who just want the condensed steps:
    sudo apt update && sudo apt upgrade -y
    ```
 
-8. **Install ROS 2 Humble** following the official instructions or the bootstrap script:
-
-   ```bash
-   # [Jetson]
-   ./scripts/install-ros2.sh
-   ```
+8. **Install ROS 2 Humble** following the step-by-step instructions in [docs/06-ros2-bootstrap.md](docs/06-ros2-bootstrap.md).
 
 9. **Verify connectivity to the GO2** head unit at `192.168.123.161`:
 
@@ -96,13 +108,15 @@ For experienced users who just want the condensed steps:
    ping 192.168.123.161
    ```
 
-10. **Test a ROS 2 topic** from the GO2's built-in ROS bridge (if available on your model):
+10. **Verify ROS 2 is working** with the built-in demo nodes (not GO2-specific topics yet):
 
     ```bash
     # [Jetson]
     source /opt/ros/humble/setup.bash
-    ros2 topic list
+    ros2 run demo_nodes_cpp talker
     ```
+
+    > **Note:** Seeing GO2 robot topics requires the Unitree SDK or `unitree_ros2` package in addition to ROS 2. See [docs/07-go2-notes.md](docs/07-go2-notes.md).
 
 For the full explanation behind each step, read on.
 
@@ -131,12 +145,11 @@ All scripts are in the `scripts/` directory. Run them from the repository root.
 
 | Script | Run On | Description |
 |--------|--------|-------------|
-| `scripts/set-static-ip.sh` | Jetson | Assigns a static IP in the 192.168.123.x range via nmcli |
-| `scripts/share-internet.sh` | Laptop | Enables NAT and IP forwarding to share internet with the Jetson |
-| `scripts/install-ros2.sh` | Jetson | Installs ROS 2 Humble and common dependencies |
-| `scripts/setup-workspace.sh` | Jetson | Creates a colcon workspace and sources it in .bashrc |
-| `scripts/test-go2-connection.sh` | Jetson | Pings known GO2 internal IPs and reports status |
-| `scripts/undo-internet-sharing.sh` | Laptop | Removes the NAT/forwarding rules set by share-internet.sh |
+| `scripts/share_internet_from_laptop.sh` | Laptop | Enables NAT and IP forwarding to share internet with the Jetson. Run with `--clean` to remove rules. |
+| `scripts/setup_ssh.sh` | Jetson | Installs openssh-server, enables the service, opens the firewall. |
+| `scripts/jetson_first_boot_check.sh` | Jetson | Verifies OS, CUDA, GPU, disk, RAM, SSH, and internet. Prints a PASS/FAIL summary. |
+| `scripts/jetson_dev_packages.sh` | Jetson | Installs common development packages (build tools, Python, OpenCV, Eigen, jtop). |
+| `scripts/check_network_routes.sh` | Jetson or Laptop | Checks connectivity to the GO2, Jetson, and internet. Auto-detects which machine it runs on. |
 
 Before running any script, make it executable:
 
@@ -155,44 +168,50 @@ Below is the typical network topology when the Jetson is installed on the GO2 an
                         |
                    +---------+
                    | Laptop  |
-                   | .123.10 |
+                   | .123.100|
                    +---------+
                         |
                     Ethernet
                    (192.168.123.x)
                         |
+               GO2 internal Ethernet switch
+                        |
         +---------------+---------------+
         |                               |
    +---------+                    +-----------+
-   | Jetson  |                    | GO2 Head  |
-   | .123.15 |----Ethernet-----  | .123.161  |
+   | Jetson  |                    | GO2 MCU   |
+   | .123.15 |                    | .123.161  |
    +---------+                    +-----------+
                                         |
                                   +-----------+
-                                  | GO2 Body  |
+                                  | GO2 EDU   |
+                                  | built-in  |
+                                  | compute   |
                                   | .123.13   |
                                   +-----------+
 ```
 
 **Key addresses on the GO2 internal network (192.168.123.0/24):**
 
-| Device | Typical IP |
-|--------|------------|
-| Laptop (your dev machine) | 192.168.123.10 |
-| Jetson Orin (your board) | 192.168.123.15 |
-| GO2 head unit (Jetson Nano inside GO2) | 192.168.123.161 |
-| GO2 body MCU / motion controller | 192.168.123.13 |
-| GO2 LiDAR (if equipped) | 192.168.123.120 |
-| GO2 Wi-Fi AP (robot's own hotspot) | 192.168.12.1 |
+| Device | Typical IP | Notes |
+|--------|------------|-------|
+| Laptop (your dev machine) | 192.168.123.100 | Static, set manually |
+| Your Jetson Orin | 192.168.123.15 | Static, set manually (use .18 if .15 is taken) |
+| GO2 main control board (MCU) | 192.168.123.161 | Fixed in firmware — do not change |
+| GO2 EDU built-in compute board | 192.168.123.13 | Fixed in firmware — only present on EDU model |
+| GO2 LiDAR (if equipped) | varies | Scan with `nmap -sn 192.168.123.0/24` to discover |
+| GO2 Wi-Fi AP (robot's own hotspot) | 192.168.12.1 | **Different subnet (12.x, not 123.x)** |
 
-Note: The GO2's own Wi-Fi hotspot uses a **different** subnet (192.168.12.x). The wired internal network uses 192.168.123.x. Do not confuse the two.
+> The GO2's own Wi-Fi hotspot uses **192.168.12.x**, not **192.168.123.x**. These are completely separate networks. The wired internal network (192.168.123.x) is what this guide uses for all communication.
+
+> If you have a GO2 EDU, the built-in compute board at `.13` is already a Jetson. Your new Jetson joins the same network as a second compute unit — choose a different IP (e.g., `.15` or `.18`) and verify there is no conflict by running `nmap -sn 192.168.123.0/24` before assigning.
 
 ---
 
 ## FAQ
 
 **Q: Which JetPack version should I use?**
-A: JetPack 5.1.2 or later is recommended for the Orin NX and Orin Nano. JetPack 6.x works as well but check that your specific carrier board has driver support. The guides in this repo assume JetPack 5.x unless noted otherwise.
+A: This guide targets **JetPack 6.x** (Ubuntu 22.04). This is the recommended path because ROS 2 Humble installs cleanly from apt on Ubuntu 22.04. JetPack 5.x also supports Orin modules (from version 5.0.2+), but it uses Ubuntu 20.04, where ROS 2 Humble binary packages are not available. Before flashing, verify that your carrier board has JetPack 6.x driver support — check the carrier board manufacturer's documentation.
 
 **Q: Can I use the GO2's built-in Wi-Fi hotspot to connect my laptop AND give the Jetson internet?**
 A: The GO2's hotspot (192.168.12.x) does not provide internet access -- it is only for the Unitree mobile app. For internet on the Jetson, share your laptop's Wi-Fi over the wired Ethernet link as described in [docs/05-internet-sharing.md](docs/05-internet-sharing.md).
@@ -204,7 +223,7 @@ A: Only for the very first boot if you did not pre-configure a headless image. A
 A: First confirm your Jetson has a static IP in the 192.168.123.x/24 range. Then check that the Ethernet cable is plugged into the GO2's internal network switch (not the external debug port). See the troubleshooting table below and [docs/08-troubleshooting.md](docs/08-troubleshooting.md).
 
 **Q: Which ROS 2 distribution should I install?**
-A: ROS 2 Humble Hawksbill (LTS). It is the best-supported distribution on Ubuntu 22.04, which is the default OS for JetPack 5.x on Orin modules.
+A: **ROS 2 Humble Hawksbill (LTS)**, supported through May 2027. It installs cleanly from apt on Ubuntu 22.04 (which is what JetPack 6.x provides). See [docs/06-ros2-bootstrap.md](docs/06-ros2-bootstrap.md).
 
 **Q: Will this guide work for the GO2 Air / GO2 Pro / GO2 EDU?**
 A: The networking layout is the same across GO2 variants. However, the EDU version exposes more ROS 2 topics and services out of the box. The Air and Pro models may require Unitree's SDK for low-level control.
@@ -220,7 +239,7 @@ A: The networking layout is the same across GO2 variants. However, the EDU versi
 | `apt update` fails on Jetson (no internet) | Internet sharing not configured on laptop | Follow [docs/05-internet-sharing.md](docs/05-internet-sharing.md). Check that IP forwarding is enabled on the laptop: `cat /proc/sys/net/ipv4/ip_forward` should return `1`. |
 | Jetson gets a 169.254.x.x address | DHCP failed and no static IP is set | Set a manual static IP. See [docs/04-networking-and-ssh.md](docs/04-networking-and-ssh.md). |
 | SDK Manager does not detect the Jetson | Jetson not in recovery mode, or bad USB cable | Hold the recovery button while powering on. Try a different USB-C cable. |
-| ROS 2 topics from GO2 not visible | DDS discovery issue or firewall | Ensure both devices are on the same subnet. Try setting `export ROS_DOMAIN_ID=0`. Check no firewall is blocking UDP multicast. |
+| ROS 2 topics from GO2 not visible | ROS 2 alone does not publish GO2 topics | You need the Unitree SDK or `unitree_ros2` package installed and configured. After that, check DDS discovery and `ROS_DOMAIN_ID`. See [docs/07-go2-notes.md](docs/07-go2-notes.md). |
 | Jetson overheats and throttles | Insufficient cooling inside GO2 enclosure | Add a fan or heatsink. Check thermal status with `tegrastats`. |
 | GO2 robot behaves erratically after changes | Internal network IPs were modified | Never change the GO2's factory-assigned IPs. Power cycle the robot to restore defaults. |
 
