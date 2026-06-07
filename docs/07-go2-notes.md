@@ -1,4 +1,4 @@
-# 07 — GO2 Notes, Safety, and Communication
+# 07: GO2 Notes, Safety, and Communication
 
 This document covers what you need to know about the Unitree GO2 itself before
 you start sending commands from the Jetson.
@@ -8,7 +8,7 @@ you start sending commands from the Jetson.
 ## GO2 Internal Architecture
 
 The GO2 has its own internal computer (main control board) running Unitree's
-proprietary firmware. You do not modify or reflash this board — you communicate
+proprietary firmware. You do not modify or reflash this board, you communicate
 with it over Ethernet.
 
 Key facts:
@@ -58,14 +58,14 @@ The Jetson is typically mounted on the GO2's back (dorsal) surface.
 
 ### GO2 EDU Power Output
 
-The GO2 EDU provides a power output for external compute devices. The exact voltage and connector are documented in Unitree's hardware manual for your firmware version — obtain this from Unitree's support portal before wiring anything.
+The GO2 EDU provides a power output for external compute devices. The exact voltage and connector are documented in Unitree's hardware manual for your firmware version, obtain this from Unitree's support portal before wiring anything.
 
 As a general reference from community reports, the payload rail is in the 24V range, but **measure with a multimeter before connecting**. Your Jetson carrier board likely expects a different voltage:
 
 | Jetson Setup | Expected Input Voltage |
 |-------------|----------------------|
-| Orin NX/Nano on a third-party carrier board | Check your carrier board's datasheet — commonly 12V or 19V |
-| Orin NX/Nano Developer Kit (NVIDIA) | 9–20V via barrel jack |
+| Orin NX/Nano on a third-party carrier board | Check your carrier board's datasheet, commonly 12V or 19V |
+| Orin NX/Nano Developer Kit (NVIDIA) | 9-20V via barrel jack |
 | Orin Nano Developer Kit (NVIDIA) | 5V via USB-C (up to 25W) |
 
 You will likely need a **DC-DC converter** (buck converter) to step down to whatever your carrier board expects. Size it for at least 30W to handle the Orin NX's 25W peak draw plus converter losses.
@@ -85,8 +85,8 @@ working.
 
 Unitree provides two main SDKs:
 
-- **unitree_legged_sdk** — C++ library for sending commands and receiving state over UDP. Does not depend on ROS 2.
-- **unitree_ros2** — ROS 2 wrapper around the SDK, providing GO2 state and control over standard ROS 2 topics and services.
+- **unitree_legged_sdk**: C++ library for sending commands and receiving state over UDP. Does not depend on ROS 2.
+- **unitree_ros2**: ROS 2 wrapper around the SDK, providing GO2 state and control over standard ROS 2 topics and services.
 
 Both communicate with the GO2 main board over UDP on the `192.168.123.x` network.
 
@@ -106,7 +106,7 @@ The GO2 supports two levels of control:
 **Low-level control** (advanced):
 - Direct control of each motor (position, velocity, torque)
 - Bypasses the GO2's internal balance controller
-- **Can damage the robot** if commands are wrong — motors can overheat, legs
+- **Can damage the robot** if commands are wrong, motors can overheat, legs
   can collide, the robot can fall violently
 
 > **SAFETY: Always start with high-level control.** Do not attempt low-level
@@ -159,17 +159,17 @@ Read this section carefully before running any code on the GO2.
 4. **The GO2 has built-in protection features.** According to Unitree's
    documentation, the firmware may cut motor power if it detects abnormal
    commands (excessive torque, impossible joint angles). However, do not rely
-   on this as a safety guarantee — protection thresholds may vary by firmware
+   on this as a safety guarantee, protection thresholds may vary by firmware
    version, and a fall can still cause damage to the robot or surroundings.
 
 5. **If the robot starts behaving unexpectedly**, try these in order (none are
-   guaranteed to work in every situation — always keep a safe distance):
-   - Press the power button once — on most firmware versions, this triggers a
+   guaranteed to work in every situation, always keep a safe distance):
+   - Press the power button once, on most firmware versions, this triggers a
      sit-down sequence, but behavior may vary by firmware
    - Use the emergency stop on the remote controller if available
    - As a last resort, hold the power button for several seconds to force a
-     hard shutdown — the robot will collapse without a controlled sit-down
-   - If your code is the problem, Ctrl+C the process on the Jetson — note that
+     hard shutdown, the robot will collapse without a controlled sit-down
+   - If your code is the problem, Ctrl+C the process on the Jetson, note that
      the robot may continue its last command briefly until the control loop
      times out
 
@@ -190,8 +190,8 @@ Use this table as a quick reference for the devices on the GO2 network.
 | GO2 Main Board | `192.168.123.161` | Do not change. Standard across all GO2 units. |
 | Jetson (recommended) | `192.168.123.15` | Set via nmcli (see networking guide) |
 | Laptop (recommended) | `192.168.123.100` | Set on your Ethernet interface |
-| GO2 LiDAR (if present) | varies | Scan the network to discover — see tip below |
-| GO2 Cameras (if present) | varies | Scan the network to discover — see tip below |
+| GO2 LiDAR (if present) | varies | Scan the network to discover, see tip below |
+| GO2 Cameras (if present) | varies | Scan the network to discover, see tip below |
 
 > **Tip:** You can scan the network to discover all active devices:
 > ```bash
@@ -214,4 +214,4 @@ Use this table as a quick reference for the devices on the GO2 network.
 
 ---
 
-**Previous:** [06 — ROS 2 Bootstrap](06-ros2-bootstrap.md)
+**Previous:** [06, ROS 2 Bootstrap](06-ros2-bootstrap.md)

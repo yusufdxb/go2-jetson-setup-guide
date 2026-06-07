@@ -451,7 +451,7 @@ sudo nmcli con modify go2-network ipv4.addresses 192.168.123.18/24
 sudo nmcli con up go2-network
 ```
 
-> Pick any unused address on `192.168.123.x` that is not already taken by the GO2 main board (`.161`), the EDU built-in compute board (typically `.13`), or your laptop (`.100`). Always scan the network first with `nmap -sn 192.168.123.0/24` to see what is in use — do not assume addresses are free.
+> Pick any unused address on `192.168.123.x` that is not already taken by the GO2 main board (`.161`), the EDU built-in compute board (typically `.13`), or your laptop (`.100`). Always scan the network first with `nmap -sn 192.168.123.0/24` to see what is in use, do not assume addresses are free.
 
 **If the subnet mask is wrong** (e.g., `/32` instead of `/24`):
 

@@ -36,12 +36,12 @@ The GO2 uses a wired Ethernet network inside the body with the subnet **192.168.
 
 | Device | Typical IP | Notes |
 |--------|-----------|-------|
-| Main control board (MCU) | `192.168.123.161` | Fixed in firmware — do not change |
-| GO2 EDU built-in compute board | `192.168.123.13` | Documented default — EDU model only. Verify with `nmap` (see below). |
+| Main control board (MCU) | `192.168.123.161` | Fixed in firmware, do not change |
+| GO2 EDU built-in compute board | `192.168.123.13` | Documented default, EDU model only. Verify with `nmap` (see below). |
 | Your new Jetson (what we will set up) | `192.168.123.15` | We assign this; use `.18` if `.15` is taken |
-| GO2's Wi-Fi AP gateway | `192.168.12.1` | **Different subnet (12.x)** — this is the Wi-Fi hotspot |
+| GO2's Wi-Fi AP gateway | `192.168.12.1` | **Different subnet (12.x)**: this is the Wi-Fi hotspot |
 
-> **Important**: Before assigning `192.168.123.15` to your new Jetson, scan the network to check what is already in use: `nmap -sn 192.168.123.0/24`. If a device already uses `.15`, pick a different unused address (e.g., `192.168.123.18`). The MCU at `.161` is standard across all GO2 units. The EDU built-in compute board is documented at `.13`, but exact addresses may vary by firmware version — always scan first and do not change any factory-assigned addresses.
+> **Important**: Before assigning `192.168.123.15` to your new Jetson, scan the network to check what is already in use: `nmap -sn 192.168.123.0/24`. If a device already uses `.15`, pick a different unused address (e.g., `192.168.123.18`). The MCU at `.161` is standard across all GO2 units. The EDU built-in compute board is documented at `.13`, but exact addresses may vary by firmware version, always scan first and do not change any factory-assigned addresses.
 
 ---
 
@@ -92,7 +92,7 @@ JetPack 6.x is the recommended path for this guide because ROS 2 Humble installs
 
 **Note on JetPack 5.x:** JetPack 5.x also supports Orin NX and Orin Nano modules (from version 5.0.2+). It runs Ubuntu 20.04. If you are already on JetPack 5.x, it will work for the networking and SSH sections of this guide, but the ROS 2 section assumes Ubuntu 22.04. On Ubuntu 20.04, ROS 2 Humble binaries are not available from apt.
 
-Before flashing, confirm that your specific carrier board has driver support for JetPack 6.x. Check the carrier board manufacturer's website — some third-party boards lag behind NVIDIA's release schedule.
+Before flashing, confirm that your specific carrier board has driver support for JetPack 6.x. Check the carrier board manufacturer's website, some third-party boards lag behind NVIDIA's release schedule.
 
 You can find the latest JetPack releases at: https://developer.nvidia.com/jetpack-sdk
 
@@ -118,7 +118,7 @@ The GO2's internal battery provides a **24 V rail** that can power additional ha
 1. **Tap the internal 24 V rail** through the GO2's payload power connector and use a DC-DC converter to step it down to the voltage your carrier board expects (check your carrier board's datasheet).
 2. **Use a separate battery** mounted on the GO2's back (some people strap on a small LiPo or USB-C power bank).
 
-> **Warning**: Incorrect voltage will destroy the Jetson. Always verify the rail voltage with a multimeter before connecting. The GO2 EDU's payload connector pinout is documented in Unitree's hardware manual — obtain the correct document for your firmware version from Unitree's support portal.
+> **Warning**: Incorrect voltage will destroy the Jetson. Always verify the rail voltage with a multimeter before connecting. The GO2 EDU's payload connector pinout is documented in Unitree's hardware manual, obtain the correct document for your firmware version from Unitree's support portal.
 
 ---
 

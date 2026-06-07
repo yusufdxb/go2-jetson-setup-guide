@@ -1,4 +1,4 @@
-# 06 — Installing ROS 2 on the Jetson
+# 06: Installing ROS 2 on the Jetson
 
 ## Why ROS 2?
 
@@ -18,7 +18,7 @@ access, Unitree's `unitree_legged_sdk` (C++ UDP) works without ROS 2.
 
 ## Which Version?
 
-**ROS 2 Humble Hawksbill** — this is the Long Term Support (LTS) release,
+**ROS 2 Humble Hawksbill**: this is the Long Term Support (LTS) release,
 supported through 2027. It targets **Ubuntu 22.04**, which is what JetPack 6.x
 ships with.
 
@@ -37,7 +37,7 @@ ships with.
 
 All commands in this section run on **[Jetson]**.
 
-### Step 1 — Set Locale
+### Step 1: Set Locale
 
 ROS 2 requires a UTF-8 locale.
 
@@ -60,7 +60,7 @@ You should see `LANG=en_US.UTF-8` in the output.
 
 ---
 
-### Step 2 — Add the ROS 2 Apt Repository
+### Step 2: Add the ROS 2 Apt Repository
 
 ```bash
 # [Jetson]
@@ -97,11 +97,11 @@ deb [arch=arm64 signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://pa
 **If this fails...**
 - If `curl` is not installed: `sudo apt install curl`
 - If you see `arch=amd64` instead of `arch=arm64`, something is wrong with
-  your JetPack install — the Jetson is an ARM device and should report `arm64`.
+  your JetPack install, the Jetson is an ARM device and should report `arm64`.
 
 ---
 
-### Step 3 — Install ROS 2 Humble
+### Step 3: Install ROS 2 Humble
 
 ```bash
 # [Jetson]
@@ -116,18 +116,18 @@ This will download roughly **2 GB** of packages and take a while. Be patient.
 > means you will need to visualize data from your laptop rather than the Jetson.
 >
 > ```bash
-> # [Jetson] (alternative — pick one or the other, not both)
+> # [Jetson] (alternative, pick one or the other, not both)
 > sudo apt install ros-humble-ros-base -y
 > ```
 
 **If this fails...**
-- `E: Unable to locate package ros-humble-desktop` — the apt repository was
+- `E: Unable to locate package ros-humble-desktop`: the apt repository was
   not added correctly. Go back to Step 2.
-- Hash sum mismatch — run `sudo apt clean` and try again.
+- Hash sum mismatch, run `sudo apt clean` and try again.
 
 ---
 
-### Step 4 — Install Development Tools
+### Step 4: Install Development Tools
 
 ```bash
 # [Jetson]
@@ -135,13 +135,13 @@ sudo apt install python3-colcon-common-extensions python3-rosdep python3-argcomp
 ```
 
 These give you:
-- `colcon` — the ROS 2 build tool
-- `rosdep` — automatically installs dependencies for ROS packages
-- `argcomplete` — tab-completion for ROS 2 CLI commands
+- `colcon`: the ROS 2 build tool
+- `rosdep`: automatically installs dependencies for ROS packages
+- `argcomplete`: tab-completion for ROS 2 CLI commands
 
 ---
 
-### Step 5 — Initialize rosdep
+### Step 5: Initialize rosdep
 
 ```bash
 # [Jetson]
@@ -150,12 +150,12 @@ rosdep update
 ```
 
 **If this fails...**
-- `ERROR: default sources list file already exists` — this means `rosdep init`
+- `ERROR: default sources list file already exists`: this means `rosdep init`
   was already run once. This is fine. Just run `rosdep update`.
 
 ---
 
-### Step 6 — Source ROS 2 in Your Shell
+### Step 6: Source ROS 2 in Your Shell
 
 ```bash
 # [Jetson]
@@ -225,9 +225,9 @@ Expected output in Terminal 2:
 Press `Ctrl+C` in both terminals to stop.
 
 **If this fails...**
-- `command not found: ros2` — your shell is not sourcing the setup file. Run
+- `command not found: ros2`: your shell is not sourcing the setup file. Run
   `source /opt/ros/humble/setup.bash` and check your `~/.bashrc`.
-- `Package 'demo_nodes_cpp' not found` — you installed `ros-humble-ros-base`
+- `Package 'demo_nodes_cpp' not found`: you installed `ros-humble-ros-base`
   instead of `ros-humble-desktop`. Install the demo package separately:
   `sudo apt install ros-humble-demo-nodes-cpp`
 
@@ -239,8 +239,8 @@ Installing ROS 2 gets you the middleware and tooling. It does **not** automatica
 
 To communicate with the GO2, you additionally need **one of**:
 
-- **[unitree_ros2](https://github.com/unitreerobotics/unitree_ros2)** — Unitree's official ROS 2 package that wraps the Unitree SDK and exposes GO2 state and control over ROS 2 topics/services. This requires building from source in your workspace.
-- **unitree_legged_sdk** — The lower-level C++ UDP SDK. Does not require ROS 2 but has no ROS integration out of the box.
+- **[unitree_ros2](https://github.com/unitreerobotics/unitree_ros2)**: Unitree's official ROS 2 package that wraps the Unitree SDK and exposes GO2 state and control over ROS 2 topics/services. This requires building from source in your workspace.
+- **unitree_legged_sdk**: The lower-level C++ UDP SDK. Does not require ROS 2 but has no ROS integration out of the box.
 
 The setup for `unitree_ros2` is outside the scope of this guide. Start with the [unitree_ros2 GitHub repository](https://github.com/unitreerobotics/unitree_ros2) and its README after completing the steps here. Verify basic ROS 2 communication (talker/listener below) before moving on to the Unitree stack.
 
@@ -259,7 +259,7 @@ colcon build
 source install/setup.bash
 ```
 
-The first `colcon build` on an empty workspace is fast — it just sets up the
+The first `colcon build` on an empty workspace is fast, it just sets up the
 directory structure.
 
 Add the workspace to your shell so it loads automatically:
@@ -288,7 +288,7 @@ All ROS 2 nodes with the same `ROS_DOMAIN_ID` can see each other. The default
 is `0`. As long as both machines use the same ID, they will communicate:
 
 ```bash
-# [Jetson] and [Laptop] — add to ~/.bashrc on both machines
+# [Jetson] and [Laptop]: add to ~/.bashrc on both machines
 export ROS_DOMAIN_ID=0
 ```
 
@@ -391,4 +391,4 @@ echo $RMW_IMPLEMENTATION
 
 ---
 
-**Next:** [07 — GO2 Notes and Safety](07-go2-notes.md)
+**Next:** [07, GO2 Notes and Safety](07-go2-notes.md)

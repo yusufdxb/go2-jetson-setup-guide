@@ -35,7 +35,7 @@ sudo apt install -y screen
 sudo screen /dev/ttyUSB0 115200
 ```
 
-> The NVIDIA Orin DevKit carrier board exposes a USB debug port. When connected, it typically appears as `/dev/ttyACM0` on the host. Third-party carrier boards vary — check your board's documentation for the UART debug port location.
+> The NVIDIA Orin DevKit carrier board exposes a USB debug port. When connected, it typically appears as `/dev/ttyACM0` on the host. Third-party carrier boards vary, check your board's documentation for the UART debug port location.
 
 ---
 

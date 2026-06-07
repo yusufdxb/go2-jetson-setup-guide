@@ -24,7 +24,7 @@ This guide targets one specific, tested configuration. Other combinations may wo
 | **JetPack** | **6.x (latest)** | Provides Ubuntu 22.04 and CUDA 12.x |
 | **Host OS (Jetson)** | Ubuntu 22.04 (Jammy) | Comes with JetPack 6.x |
 | **ROS 2** | Humble Hawksbill (LTS) | Binary install from apt; requires Ubuntu 22.04 |
-| **GO2 model** | EDU (tested) | PRO may work — see [docs/07-go2-notes.md](docs/07-go2-notes.md) |
+| **GO2 model** | EDU (tested) | PRO may work, see [docs/07-go2-notes.md](docs/07-go2-notes.md) |
 | **Host laptop** | Ubuntu 22.04 recommended | Ubuntu 20.04 also works for flashing |
 
 **If you are using JetPack 5.x:** JetPack 5.x supports Orin modules (from 5.0.2+) and runs Ubuntu 20.04. On Ubuntu 20.04, ROS 2 Humble binaries are not available from apt; you would need ROS 2 Galactic or build Humble from source. This guide does not cover the JetPack 5.x path. Upgrading to JetPack 6.x is strongly recommended for new setups.
@@ -76,7 +76,7 @@ For experienced users who just want the condensed steps:
 4. **Assign a static IP** on the Jetson's Ethernet interface in the `192.168.123.x` range (e.g., `192.168.123.15`).
 
    ```bash
-   # [Jetson] Set static IP via nmcli (no gateway needed yet — that comes in the internet-sharing step)
+   # [Jetson] Set static IP via nmcli (no gateway needed yet: that comes in the internet-sharing step)
    sudo nmcli con add type ethernet ifname eth0 con-name go2-network \
      ip4 192.168.123.15/24
    sudo nmcli con up go2-network
@@ -197,21 +197,21 @@ Below is the typical network topology when the Jetson is installed on the GO2 an
 |--------|------------|-------|
 | Laptop (your dev machine) | 192.168.123.100 | Static, set manually |
 | Your Jetson Orin | 192.168.123.15 | Static, set manually (use .18 if .15 is taken) |
-| GO2 main control board (MCU) | 192.168.123.161 | Fixed in firmware — do not change |
-| GO2 EDU built-in compute board | 192.168.123.13 | Documented default (EDU only) — verify with `nmap` scan |
+| GO2 main control board (MCU) | 192.168.123.161 | Fixed in firmware, do not change |
+| GO2 EDU built-in compute board | 192.168.123.13 | Documented default (EDU only), verify with `nmap` scan |
 | GO2 LiDAR (if equipped) | varies | Scan with `nmap -sn 192.168.123.0/24` to discover |
 | GO2 Wi-Fi AP (robot's own hotspot) | 192.168.12.1 | **Different subnet (12.x, not 123.x)** |
 
 > The GO2's own Wi-Fi hotspot uses **192.168.12.x**, not **192.168.123.x**. These are completely separate networks. The wired internal network (192.168.123.x) is what this guide uses for all communication.
 
-> If you have a GO2 EDU, the built-in compute board (documented at `.13`) is already present on the network. Your new Jetson joins as a second compute unit — choose an unused IP (e.g., `.15` or `.18`) and verify there is no conflict by running `nmap -sn 192.168.123.0/24` before assigning. Exact internal addresses may vary by firmware version, so always scan first.
+> If you have a GO2 EDU, the built-in compute board (documented at `.13`) is already present on the network. Your new Jetson joins as a second compute unit, choose an unused IP (e.g., `.15` or `.18`) and verify there is no conflict by running `nmap -sn 192.168.123.0/24` before assigning. Exact internal addresses may vary by firmware version, so always scan first.
 
 ---
 
 ## FAQ
 
 **Q: Which JetPack version should I use?**
-A: This guide targets **JetPack 6.x** (Ubuntu 22.04). This is the recommended path because ROS 2 Humble installs cleanly from apt on Ubuntu 22.04. JetPack 5.x also supports Orin modules (from version 5.0.2+), but it uses Ubuntu 20.04, where ROS 2 Humble binary packages are not available. Before flashing, verify that your carrier board has JetPack 6.x driver support — check the carrier board manufacturer's documentation.
+A: This guide targets **JetPack 6.x** (Ubuntu 22.04). This is the recommended path because ROS 2 Humble installs cleanly from apt on Ubuntu 22.04. JetPack 5.x also supports Orin modules (from version 5.0.2+), but it uses Ubuntu 20.04, where ROS 2 Humble binary packages are not available. Before flashing, verify that your carrier board has JetPack 6.x driver support, check the carrier board manufacturer's documentation.
 
 **Q: Can I use the GO2's built-in Wi-Fi hotspot to connect my laptop AND give the Jetson internet?**
 A: The GO2's hotspot (192.168.12.x) does not provide internet access -- it is only for the Unitree mobile app. For internet on the Jetson, share your laptop's Wi-Fi over the wired Ethernet link as described in [docs/05-internet-sharing.md](docs/05-internet-sharing.md).

@@ -181,7 +181,7 @@ If you prefer not to use SDK Manager's GUI, you can flash from the command line.
 The filenames for L4T packages change with each release. Go to https://developer.nvidia.com/linux-tegra and download the correct BSP and sample root filesystem for your JetPack version. The general process:
 
 ```bash
-# Filenames below are illustrative — use the actual filenames from the download page
+# Filenames below are illustrative: use the actual filenames from the download page
 cd ~/Downloads
 tar xf Jetson_Linux_R36.*_aarch64.tbz2
 cd Linux_for_Tegra/rootfs/
@@ -204,7 +204,7 @@ sudo ./flash.sh jetson-orin-nx-devkit internal
 sudo ./flash.sh jetson-orin-nano-devkit internal
 ```
 
-> If you are using a third-party carrier board (Seeed reComputer, Auvidea, etc.), you must use the board config file provided by that manufacturer — the NVIDIA DevKit configs will not work. Check the manufacturer's BSP documentation.
+> If you are using a third-party carrier board (Seeed reComputer, Auvidea, etc.), you must use the board config file provided by that manufacturer, the NVIDIA DevKit configs will not work. Check the manufacturer's BSP documentation.
 
 **If the flash fails...**
 - Check `lsusb` again to make sure the Jetson is still in recovery mode.

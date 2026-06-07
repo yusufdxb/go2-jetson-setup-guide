@@ -101,7 +101,7 @@ sudo nmcli con mod go2-network ipv4.dns "8.8.8.8 8.8.4.4"
 sudo nmcli con up go2-network
 ```
 
-> `192.168.123.100` is your laptop's IP on the GO2 network (set in the previous guide). The DNS line uses Google's public DNS — you can substitute `1.1.1.1 1.0.0.1` for Cloudflare instead.
+> `192.168.123.100` is your laptop's IP on the GO2 network (set in the previous guide). The DNS line uses Google's public DNS, you can substitute `1.1.1.1 1.0.0.1` for Cloudflare instead.
 
 **Verify the gateway:**
 
@@ -124,7 +124,7 @@ default via 192.168.123.100 dev eth0 proto static metric 100
 nmcli con show go2-network | grep -E "ipv4.gateway|ipv4.dns"
 ```
 
-> On JetPack 6.x (Ubuntu 22.04), `/etc/resolv.conf` is managed by `systemd-resolved` and NetworkManager. Do not write directly to `/etc/resolv.conf` — your changes will be overwritten. The `nmcli` method above persists correctly.
+> On JetPack 6.x (Ubuntu 22.04), `/etc/resolv.conf` is managed by `systemd-resolved` and NetworkManager. Do not write directly to `/etc/resolv.conf`: your changes will be overwritten. The `nmcli` method above persists correctly.
 
 > **If `nmcli con up` fails with a route conflict...** Another connection may already have a default route set. Check with `nmcli con show --active` and deactivate any conflicting connections. You can also check the current default route with `ip route show default`.
 
@@ -169,7 +169,7 @@ If all three work, the Jetson has full internet access. You can now run `sudo ap
 
 ## Important: Persistence Across Reboots
 
-The **Jetson side** (gateway and DNS) is already persistent — those settings are stored in the `go2-network` NetworkManager profile and survive reboots automatically.
+The **Jetson side** (gateway and DNS) is already persistent, those settings are stored in the `go2-network` NetworkManager profile and survive reboots automatically.
 
 The **laptop side** (iptables rules and IP forwarding) is **not persistent** by default. They will be lost when you reboot your laptop.
 
@@ -252,7 +252,7 @@ curl --proxy socks5h://localhost:1080 https://httpbin.org/ip
 Instead of a SOCKS proxy, create an HTTP proxy with port forwarding:
 
 ```bash
-# [Jetson] — forward local port 8080 to the laptop's squid/http proxy if available
+# [Jetson]: forward local port 8080 to the laptop's squid/http proxy if available
 # Or use the SOCKS proxy with apt via:
 echo 'Acquire::http::Proxy "socks5h://localhost:1080";' | sudo tee /etc/apt/apt.conf.d/99proxy
 ```
@@ -332,7 +332,7 @@ This is a DNS issue. The Jetson can reach the internet but cannot resolve domain
 
 **Fix:**
 
-On JetPack 6.x (Ubuntu 22.04), `/etc/resolv.conf` is typically managed by `systemd-resolved` via NetworkManager. Do **not** write to `/etc/resolv.conf` directly — your changes will be overwritten on the next reboot or network event.
+On JetPack 6.x (Ubuntu 22.04), `/etc/resolv.conf` is typically managed by `systemd-resolved` via NetworkManager. Do **not** write to `/etc/resolv.conf` directly, your changes will be overwritten on the next reboot or network event.
 
 Instead, configure DNS through NetworkManager:
 
@@ -379,7 +379,7 @@ sudo nmcli con up go2-network
 
 You likely used the wrong interface name in the iptables rules. If you accidentally masquerade on the Jetson-facing interface instead of the internet-facing one, things will break.
 
-**Fix:** Remove only the rules you added (do **not** flush the entire chain — that can break Docker, VMs, and other services that also use iptables):
+**Fix:** Remove only the rules you added (do **not** flush the entire chain, that can break Docker, VMs, and other services that also use iptables):
 
 ```bash
 # [Laptop] Remove the specific rules that were added incorrectly.
